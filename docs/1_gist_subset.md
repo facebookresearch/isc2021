@@ -9,8 +9,6 @@ The number of reference images to search in is 1 million.
 For a quick test, we are going to use much fewer images than that: only the images from pairs of known matches.
 This excludes all distractor images, both on the query and reference side, which makes the problem much easier.
 
-Note: To run this test, you do not need to have the data downloaded, as the subset for the test is in this repo in `list_files/`.
-
 The subset is defined in three files:
 
 - `list_files/subset_1_queries`: list of query ids. The ids are just of the form Q00123, the filename without .jpg extension.

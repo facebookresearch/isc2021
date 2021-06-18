@@ -48,7 +48,7 @@ Otherwise follow the README file to install the required dependency.
 
 The tutorial breaks down in steps from easiest and fastest to more complicated.
 
-Step 1: [GIST descriptors on a small subset](1_gist_subset.md) (You don't need to have the data downloaded to run this test, so try this first or while your data is downloading!)
+Step 1: [GIST descriptors on a small subset](1_gist_subset.md)
 
 Step 2: [GIST descriptors with PCA](2_gist_subset_pca.md)
 
