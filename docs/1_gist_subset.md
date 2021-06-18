@@ -114,7 +114,7 @@ Which outputs the same results:
 ## Evaluation with the official script -- track 2
 
 The submission format for track 2 is different from the descriptor format we produced.
-There is a small tool to convert separate two separate hdf5 files to the official format with a single file.
+There is a small tool to convert two separate hdf5 files to the official format with a single file.
 
 Run the conversion with:
 ```
