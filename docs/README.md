@@ -19,38 +19,30 @@ In the following, we assume that the images are available in the `images/queries
 
 While the data is downloading, you can install the required packages and compile some code.
 
-## Required packages and code
+## Cloning & installing dependencies
 
-Prepare to run the code with
+First, clone this repo:
+```bash
+git clone git@github.com:facebookresearch/isc2021.git
 ```
-mkdir data/              # where to put the intermediate files
-export PYTHONPATH=.      # needed to call the python scripts
+
+Follow the steps below to install all the required dependencies in order to run the ISC evaluation code. Note: The code in this repo requires 3.5 <= Python <= 3.8.
+
+```bash
+conda create -n isc2021 python=3.8 -y && conda activate isc2021
+pip install -e isc2021/
+conda install -c pytorch faiss-gpu
 ```
 
-### Packages to install
-
-python 3.5+
-
-faiss -- GPU will be used if available
-
-typing
-
-h5py
-
-torch + torchvision for multigrain
-
-PIL
-
-### Preparing the GIST extraction
+## Preparing the GIST extraction
 
 The code for this desctiptor is included in the lear_gist-1.2 subdirectory of the repository.
 Try running
-```
+```bash
 (cd lear_gist-1.2; make)
 ```
 with a bit of luck it works out-of-the-box.
 Otherwise follow the README file to install the required dependency.
-
 
 ## Steps
 

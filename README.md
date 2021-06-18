@@ -1,14 +1,11 @@
 # ISC 2021
 
-This repostitory contains code for the Image Similarity Challenge 2021. 
-
-
+This repository contains code for the Image Similarity Challenge 2021.
 
 ## Getting started 
 
 The [docs](docs) subdirectory has step-by-step instructions on how to reproduce the baseline 
 results from the paper. 
-
 
 ## Reference paper
 
@@ -28,7 +25,6 @@ BibTeX reference:
          year = "2021",
 }
 ```
-
 
 ## Contributing
 See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.

@@ -73,7 +73,7 @@ python scripts/compute_metrics.py  \
 
 ```
 And normally it should output
-```
+```bash
 Track 2 running matching of 59916 queries in 1019936 database (256D descriptors), max_results=500000.
 Evaluating 500000 predictions (19936 GT matches)
 Average Precision: 0.19447
