@@ -69,4 +69,4 @@ Recall at rank 10: 0.37588
 ```
 
 The average precision is slightly better than in full dimension:
-PCA dimensionality reduction is both more compact and more accurate!
+PCA dimensionality reduction makes GIST both more compact and more accurate!

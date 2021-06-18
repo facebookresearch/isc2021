@@ -76,7 +76,11 @@ python scripts/compute_metrics.py \
 ```
 This takes a bit more time (especially if the machine's GPU is not supported by Faiss) and outputs
 ```
-
+Average Precision: 0.15209
+Recall at P90    : 0.10439
+Threshold at P90 : -0.0442495
+Recall at rank 1:  0.24063
+Recall at rank 10: 0.24925
 ```
 
 ## Preparing a submission file for track 2
@@ -90,3 +94,6 @@ python scripts/convert_track2_format.py \
     --db_descs data/references_{0..19}_gist_pca.hdf5 \
     --o data/gist_pca_descriptors.hdf5
 ```
+
+The output `data/gist_pca_descriptors.hdf5` can be used as an official
+submission file.
