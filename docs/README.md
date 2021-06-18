@@ -52,8 +52,8 @@ Step 1: [GIST descriptors on a small subset](1_gist_subset.md)
 
 Step 2: [GIST descriptors with PCA](2_gist_subset_pca.md)
 
-Step 3: [GIST descriptors on the full dataset](2_gist_full.md)
+Step 3: [GIST descriptors on the full dataset](3_gist_full.md)
 
-Step 4: [Multigrain descriptors on the small subset](3_multigrain_subset.md)
+Step 4: [Multigrain descriptors on the small subset](4_multigrain_subset.md)
 
-Step 5: [Multigrain descriptors on the full dataset](3_multigrain_full.md)
+Step 5: [Multigrain descriptors on the full dataset](5_multigrain_full.md)

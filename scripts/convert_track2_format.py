@@ -6,17 +6,7 @@ import numpy as np
 
 import h5py
 
-
-
-def read_descriptors(filenames):
-    descs = []
-    names = []
-    for filename in filenames:
-        hh = h5py.File(filename, "r")
-        descs.append(np.array(hh["vectors"]))
-        names += np.array(hh["image_names"][:], dtype=object).astype(str).tolist()
-    return names, np.vstack(descs)
-
+from isc.io import read_descriptors
 
 def sort_descriptors(ids, x):
     # convert to bytes as hdf5 does not always handle unicode well

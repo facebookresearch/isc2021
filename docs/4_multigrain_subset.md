@@ -46,14 +46,34 @@ python baselines/GeM_baseline.py \
     --file_list list_files/subset_1_queries \
     --image_dir images/queries \
     --o data/subset_1_queries_multigrain.hdf5 \
-    --pca_file data/pca_multigrain.vt \
-    --nproc 20
+    --pca_file data/pca_multigrain.vt
 
 python baselines/GeM_baseline.py \
     --file_list list_files/subset_1_references \
     --image_dir images/references \
     --o data/subset_1_references_multigrain.hdf5 \
-    --pca_file data/pca_multigrain.vt \
-    --nproc 20
+    --pca_file data/pca_multigrain.vt
+
 ```
+
+And the descriptor-based evaluation is:
+```
+python scripts/compute_metrics.py \
+    --query_descs data/subset_1_queries_multigrain.hdf5 \
+    --db_descs data/subset_1_references_multigrain.hdf5 \
+    --gt_filepath list_files/subset_1_ground_truth.csv \
+    --track2 \
+    --max_dim 2000
+```
+
+Giving:
+```
+Average Precision: 0.56314
+Recall at P90    : 0.41374
+Threshold at P90 : -1.51692
+Recall at rank 1:  0.60970
+Recall at rank 10: 0.70827
+```
+
+Which is significantly more accurate than GIST.
 

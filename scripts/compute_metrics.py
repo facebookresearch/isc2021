@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from isc.metrics import evaluate, Metrics, PredictedMatch, print_metrics
-from isc.io import read_ground_truth, read_predictions, write_predictions
+from isc.io import read_ground_truth, read_predictions, write_predictions, read_descriptors
 from isc.descriptor_matching import match_and_make_predictions, knn_match_and_make_predictions
 from typing import Optional
 
@@ -50,18 +50,11 @@ def compute_metrics(args):
     return metrics
 
 
-def read_descriptors(filenames):
-    descs = []
-    names = []
-    for filename in filenames:
-        hh = h5py.File(filename, "r")
-        descs.append(np.array(hh["vectors"]))
-        names += np.array(hh["image_names"][:], dtype=object).astype(str).tolist()
-    return names, np.vstack(descs)
-
 
 def compute_metrics_track2(args):
     gt = read_ground_truth(args.gt_filepath)
+
+
 
     db_image_ids, xb = read_descriptors(args.db_descs)
     d = xb.shape[1]

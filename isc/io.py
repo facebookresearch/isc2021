@@ -187,3 +187,23 @@ def write_hdf5_descriptors(vectors, image_names, fname):
         f.create_dataset("vectors", data=vectors)
         f.create_dataset("image_names", data=image_names)
 
+
+def read_descriptors(filenames):
+    """ read descriptors from a set of HDF5 files """
+    descs = []
+    names = []
+    for filename in filenames:
+        hh = h5py.File(filename, "r")
+        descs.append(np.array(hh["vectors"]))
+        names += np.array(hh["image_names"][:], dtype=object).astype(str).tolist()
+    # strip paths and extensions from the filenames
+    names = [
+        name.split('/')[-1]
+        for name in names
+    ]
+    names = [
+        name[:-4] if name.endswith(".jpg") or name.endswith(".png") else name
+        for name in names
+    ]
+    return names, np.vstack(descs)
+
