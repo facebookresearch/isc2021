@@ -69,3 +69,4 @@ if __name__ == "__main__":
         f.create_dataset('query_ids', data=query_image_ids)
         f.create_dataset('reference_ids', data=db_image_ids)
 
+
