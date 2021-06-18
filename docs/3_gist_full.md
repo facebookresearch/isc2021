@@ -1,86 +1,92 @@
+# Extracting GIST features on the full dataset
 
-Tu use it, compile `compute_gist_stream` in the lear_gist-1.2 directory with the makefile. It depends on [fftw](http://www.fftw.org/) which is available on mainstream distributions.
+In this chapter, we run on the full dataset to be able
+to do a real submission.
 
+## Extracting query descriptors
 
-## Running and evaluating
-
-### GIST baseline for track #2
-
-Here is the second version of the code package including:
-
-GIST features are extracted in 3 stages:
-
-1. PCA matrix computation
-
-```bash
-v2dir=/path/to/data
-gist_exec=/path/to/compute_gist_stream
-
-export PYTHONPATH=.
-
-# pre-train PCA matrix
-
-python baselines/gist_baseline.py \
-     --nproc 20 \
-     --giststream_exec $gist_exec \
-     --pca_file  $v2dir/pca_baseline.vt \
-     --image_dir $v2dir/1M_ref_images \
-     --file_list $v2dir/references.csv \
-     --train_pca
-
-```
-
-`--noproc` is to set the number of computation threads, adjust to your machine.
-
-
-2. extract features for query images
-```bash
-
-python baselines/gist_baseline.py \
-     --nproc 20 \
-     --giststream_exec $gist_exec \
-     --pca_file  $v2dir/pca_baseline.vt \
-     --image_dir $v2dir/v2_all_queries_jpg \
-     --file_list $v2dir/queries.csv \
-     --o $v2dir/queries_gist_baseline.hdf5
-```
-
-3. extract features for reference images
+We re-use the PCA matrix computed in the previous chapter.
+The GIST descriptors for the 50k query images can be extracted with:
 
 ```bash
 python baselines/gist_baseline.py \
-     --nproc 20 \
-     --giststream_exec $gist_exec \
-     --pca_file  $v2dir/pca_baseline.vt \
-     --image_dir $v2dir/1M_ref_images \
-     --file_list $v2dir/references.csv \
-     --o $v2dir/references_gist_baseline.hdf5
-
+    --file_list list_files/dev_queries \
+    --image_dir images/queries \
+    --o data/dev_queries_gist_pca.hdf5 \
+    --pca_file data/pca_gist.vt \
+    --nproc 20
 ```
 
-4. evaluation
-
-The descriptors can enter the evaluation script for track 2:
+However, we have only the ground truth for the 25k first query examples
+so we also extract the GIST features for that subset so that we can evaluate
+the results locally.
 
 ```bash
-python scripts/compute_metrics.py  \
-  --track2  \
-  --query_descs $v2dir/queries_gist_baseline.hdf5 \
-  --db_descs    $v2dir/references_gist_baseline.hdf5 \
-  --query_list  $v2dir/queries.csv \
-  --db_list     $v2dir/references.csv \
-  --gt_filepath $v2_dir/gt.csv
-
+python baselines/gist_baseline.py \
+    --file_list list_files/dev_queries_25k \
+    --image_dir images/queries \
+    --o data/dev_queries_25k_gist_pca.hdf5 \
+    --pca_file data/pca_gist.vt \
+    --nproc 20
 ```
-And normally it should output
+
+Yes, we could also extract them as the first 25k rows of the full query matrix.
+But GIST is very fast to extract, so it's not worth the trouble.
+
+## Extracting the reference descriptors by batches
+
+The 1 million reference descriptors could be extracted just as before,
+which takes 10 to 20 minutes.
+However, for large datasets it is often useful to extract features by
+batches so that the computation can be distributed or restarted after a failure.
+
+To support this, the feature extraction script takes arguments `--i0` and `--i1`
+to specify a subset of images to extract.
+We use this to run the feature extraction in 20 batches of 50k images in a
+loop in shell:
+
 ```bash
-Track 2 running matching of 59916 queries in 1019936 database (256D descriptors), max_results=500000.
-Evaluating 500000 predictions (19936 GT matches)
-Average Precision: 0.19447
-Recall at P90    : 0.15710
-Threshold at P90 : -0.0643869
-Recall at rank 1:  0.26124
-Recall at rank 10: 0.26570
+for i in {0..19}; do
+     python baselines/gist_baseline.py \
+          --file_list list_files/references \
+          --i0 $((i * 50000)) --i1 $(((i + 1) * 50000)) \
+          --image_dir images/references \
+          --o data/references_${i}_gist_pca.hdf5 \
+          --pca_file data/pca_gist.vt \
+          --nproc 20
+done
 ```
 
+which produces files `data/references_0_gist_pca.hdf5` to
+`data/references_19_gist_pca.hdf5`.
+We are going to use this set of files in the next sections.
+We will use the handy shell-script shortcut `data/references_{0..19}_gist_pca.hdf5` that expands to that list of files.
 
+## Evaluation on the public queries subset
+
+We can now evaluate locally on the 25k public queries.
+The evaluation script takes the set of reference descriptors at once.
+
+```bash
+python scripts/compute_metrics.py \
+    --query_descs data/dev_queries_25k_gist_pca.hdf5 \
+    --db_descs data/references_{0..19}_gist_pca.hdf5 \
+    --gt_filepath list_files/public_ground_truth.csv \
+    --track2
+```
+This takes a bit more time (especially if the machine's GPU is not supported by Faiss) and outputs
+```
+
+```
+
+## Preparing a submission file for track 2
+
+The submission file can be constructed from the (full) query descriptors
+and the reference descriptors:
+
+```bash
+python scripts/convert_track2_format.py \
+    --query_descs data/dev_queries_gist_pca.hdf5 \
+    --db_descs data/references_{0..19}_gist_pca.hdf5 \
+    --o data/gist_pca_descriptors.hdf5
+```

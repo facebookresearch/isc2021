@@ -48,7 +48,7 @@ python baselines/gist_baseline.py \
 ## Evaluating
 
 The evaluation works as before:
-```
+```bash
 python scripts/compute_metrics.py \
     --query_descs data/subset_1_queries_gist_pca.hdf5 \
     --db_descs data/subset_1_references_gist_pca.hdf5 \
