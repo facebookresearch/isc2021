@@ -44,7 +44,7 @@ if __name__ == "__main__":
         )
 
     if d > 256:
-        print(f"warning, dimension {d} is larger than allowed for track 1")
+        print(f"warning, dimension {d} is larger than allowed for track 2")
 
     # sort the descriptors (the official eval expects them sorted)
     query_image_ids, xq = sort_descriptors(query_image_ids, xq)
