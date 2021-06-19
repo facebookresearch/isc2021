@@ -97,3 +97,24 @@ python scripts/convert_track2_format.py \
 
 The output `data/gist_pca_descriptors.hdf5` can be used as an official
 submission file.
+
+
+<!--
+
+Results on full GT:
+
+python scripts/compute_metrics.py \
+    --query_descs data/dev_queries_gist_pca.hdf5 \
+    --db_descs data/references_{0..19}_gist_pca.hdf5 \
+    --gt_filepath list_files/full_ground_truth.csv \
+    --track2
+
+Track 2 running matching of 50000 queries in 1000000 database (256D descriptors), max_results=500000.
+Evaluating 500000 predictions (10000 GT matches)
+Average Precision: 0.15553
+Recall at P90    : 0.11370
+Threshold at P90 : -0.0500637
+Recall at rank 1:  0.24010
+Recall at rank 10: 0.24620
+
+-->
