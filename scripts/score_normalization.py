@@ -86,6 +86,8 @@ if __name__ == "__main__":
             print("writing normalizations to", args.norms)
             np.save(args.norms, norms)
 
+        del index; gc.collect()
+
     print(f"   normalization range [{norms.min():g}, {norms.max():g}]")
 
     # Add one column to the matrices so that the inner-product computes
@@ -101,7 +103,6 @@ if __name__ == "__main__":
             metric=faiss.METRIC_INNER_PRODUCT
     )
 
-    if args.write_predictions:
-        print("writing predictions to", args.o)
-        write_predictions(predictions, args.o)
+    print("writing predictions to", args.o)
+    write_predictions(predictions, args.o)
 

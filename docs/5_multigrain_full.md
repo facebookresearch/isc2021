@@ -3,7 +3,6 @@
 
 ## Extracting features
 
-
 Feature extraction is very similar to GIST.
 The difference is that the descriptors are much slower to extract
 (about 20 minutes of computation for 50k images on a state-of-the-art GPU).
@@ -80,11 +79,41 @@ This is a symptom of image distances that are not comparable.
 We need to apply a score normalization so that the scores for different query
 images are comparable.
 For this, a basic technique is to compare the scores of (query, reference) image
-pairs with the matching score of the query with an image that is known to be
+pairs with the matching score of the same query with an image that is known to be
 negative.
+If the score is significantly better it is more likely that the match is true match.
+The new score is then
 
-One way to do this is to
+score = old_score - factor * negative_image_score
 
+One way to obtain scores for negative queries is to match the
+query with the set of training images.
+To get a more stable estimate of the negative score, it's also better to
+take the score at rank 10 (or similar, not 1) of the training set.
+Note that other reference images cannot be used to estimate the negative score
+because the scoring of images should be independent.
+
+### Extracting features on the training set
+
+
+Computing the descriptors of 1~million training images is slow but straightforward:
+
+```bash
+
+for i in {0..19}; do
+     python baselines/GeM_baseline.py \
+          --file_list list_files/train \
+          --i0 $((i * 50000)) --i1 $(((i + 1) * 50000)) \
+          --image_dir images/train \
+          --o data/train_${i}_multigrain.hdf5 \
+          --pca_file data/pca_multigrain.vt
+done
+
+```
+
+### subtracting scores
+
+Then the score normalization can be performed with:
 
 ```bash
 python scripts/score_normalization.py \
@@ -100,12 +129,19 @@ Then evaluate with
 ```bash
 python scripts/compute_metrics.py \
     --preds_filepath data/predictions_dev_queries_25k_normalized.csv \
-    --gt_filepath list_files/public_ground_truth.csv \
+    --gt_filepath list_files/public_ground_truth.csv
+```
+
+Which gives
+```
+Track 1 results of 500000 predictions (4991 GT matches)
+Average Precision: 0.36491
+Recall at P90    : 0.26828
+Threshold at P90 : -0.014896
+Recall at rank 1:  0.44961
+Recall at rank 10: 0.49309
 ```
 
 
 
-### Extracting features on the training set
 
-
-### subtracting scores

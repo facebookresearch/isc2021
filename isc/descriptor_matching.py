@@ -66,8 +66,8 @@ def search_with_capped_res(xq, xb, num_results, metric=faiss.METRIC_L2):
     """
     index = faiss.IndexFlat(xb.shape[1], metric)
     index.add(xb)
-    logging.basicConfig()
-    logging.getLogger(exhaustive_search.__name__).setLevel(logging.DEBUG)
+    # logging.basicConfig()
+    # logging.getLogger(exhaustive_search.__name__).setLevel(logging.DEBUG)
 
     if metric == faiss.METRIC_INNER_PRODUCT:
         # this is a very ugly hack because contrib.exhaustive_search does
