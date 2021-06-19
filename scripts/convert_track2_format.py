@@ -15,7 +15,7 @@ def sort_descriptors(ids, x):
         for name in ids
     ])
     o = ids.argsort()
-    return ids[o], x[o]
+    return ids[o], x[o].astype("float32")
 
 
 if __name__ == "__main__":
