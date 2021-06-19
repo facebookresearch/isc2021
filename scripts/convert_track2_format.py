@@ -14,7 +14,6 @@ def sort_descriptors(ids, x):
         bytes(name, "ascii")
         for name in ids
     ])
-    return ids, x
     o = ids.argsort()
     return ids[o], x[o]
 

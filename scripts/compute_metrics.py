@@ -13,7 +13,6 @@ from typing import Optional
 import h5py
 
 import faiss
-import logging
 
 
 
@@ -80,7 +79,8 @@ def compute_metrics_track2(args):
         predictions = match_and_make_predictions(
             xq, query_image_ids,
             xb, db_image_ids,
-            args.max_results
+            args.max_results,
+            metric = faiss.METRIC_INNER_PRODUCT if args.ip else faiss.METRIC_L2
         )
     else:
         print(
@@ -91,7 +91,8 @@ def compute_metrics_track2(args):
         predictions = knn_match_and_make_predictions(
             xq, query_image_ids,
             xb, db_image_ids,
-            args.knn
+            args.knn,
+            metric = faiss.METRIC_INNER_PRODUCT if args.ip else faiss.METRIC_L2
         )
 
     if args.write_predictions:
@@ -127,6 +128,7 @@ if __name__ == "__main__":
     aa("--db_descs", nargs='*', help="database descriptor file in HDF5 format")
     aa("--query_descs", nargs='*', help="query descriptor file in HDF5 format")
     aa("--max_dim", default=256, type=int, help="max number of accepted descriptor dimensions")
+    aa("--ip", default=False, action="store_true", help="use inner product rather than L2 to compare descriptors")
     aa("--write_predictions", help="write predictions to this output file (for debugging)")
 
     group = parser.add_argument_group("output")
