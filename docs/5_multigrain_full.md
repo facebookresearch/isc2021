@@ -150,6 +150,30 @@ obtain better results without this kind of patches.
 
 <!--
 
+
+## Results on full dataset
+
+### before normalization
+
+python scripts/compute_metrics.py \
+    --query_descs data/dev_queries_multigrain.hdf5 \
+    --db_descs data/references_{0..19}_multigrain.hdf5 \
+    --gt_filepath list_files/full_ground_truth.csv \
+    --max_dim 2000 \
+    --track2
+
+
+Track 2 running matching of 50000 queries in 1000000 database (1500D descriptors), max_results=500000.
+Evaluating 500000 predictions (10000 GT matches)
+Average Precision: 0.16470
+Recall at P90    : 0.06360
+Threshold at P90 : -0.688276
+Recall at rank 1:  0.42150
+Recall at rank 10: 0.44210
+
+
+### after normalization
+
 python scripts/score_normalization.py \
     --query_descs data/dev_queries_multigrain.hdf5 \
     --db_descs data/references_{0..19}_multigrain.hdf5 \
