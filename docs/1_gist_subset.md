@@ -17,6 +17,17 @@ The subset is defined in three files:
 
 - `list_files/subset_1_ground_truth.csv`: ground-truth matches between queries and references
 
+## Preparing the GIST extraction
+
+The code for this desctiptor is included in the lear_gist-1.2 subdirectory of the repository.
+Try running
+```bash
+(cd lear_gist-1.2; make)
+```
+with a bit of luck it works out-of-the-box.
+Otherwise follow the README file to install the required dependency.
+
+
 ## running feature extraction
 
 The script `baselines/gist_baseline.py` performs GIST feature extraction.

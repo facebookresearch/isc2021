@@ -146,7 +146,7 @@ So this basic score normalization results a factor 2 increase of the
 average precision.
 This shows that score normalization is important for this kind of descriptors.
 Incorporating a distance calibration at training time should make it possible to
-obtain better results without this kind of patches.
+obtain better results without this kind of matching-time patches.
 
 <!--
 
