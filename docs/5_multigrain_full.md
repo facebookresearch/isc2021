@@ -111,7 +111,7 @@ done
 
 ```
 
-### subtracting scores
+### Subtracting scores
 
 Then the score normalization can be performed with:
 
@@ -142,6 +142,33 @@ Recall at rank 1:  0.44961
 Recall at rank 10: 0.49309
 ```
 
+So this basic score normalization results a factor 2 increase of the
+average precision.
+This shows that score normalization is important for this kind of descriptors.
+Incorporating a distance calibration at training time should make it possible to
+obtain better results without this kind of patches.
+
+<!--
+
+python scripts/score_normalization.py \
+    --query_descs data/dev_queries_multigrain.hdf5 \
+    --db_descs data/references_{0..19}_multigrain.hdf5 \
+    --train_descs data/train_{0..19}_multigrain.hdf5 \
+    --factor 2.0 --n 10 \
+    --o data/predictions_dev_queries_normalized.csv
+
+
+python scripts/compute_metrics.py \
+    --preds_filepath data/predictions_dev_queries_normalized.csv \
+    --gt_filepath list_files/full_ground_truth.csv
+
+Average Precision: 0.36420
+Recall at P90    : 0.27200
+Threshold at P90 : -0.015121
+Recall at rank 1:  0.44520
+Recall at rank 10: 0.48300
+
+-->
 
 
 

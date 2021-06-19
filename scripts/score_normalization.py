@@ -13,6 +13,7 @@ from isc.io import write_predictions, read_descriptors
 
 import faiss
 import logging
+import gc
 
 
 
