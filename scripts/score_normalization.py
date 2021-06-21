@@ -59,7 +59,7 @@ if __name__ == "__main__":
         train_image_ids, xt = read_descriptors(args.train_descs)
 
         print(
-            f"Matching {len(xq)} queries in {len(xb)} database ({d}D descriptors), "
+            f"Matching {len(xq)} queries in {len(xt)} training ({d}D descriptors), "
             f"keeping n={args.n} neighbors per query."
         )
 
