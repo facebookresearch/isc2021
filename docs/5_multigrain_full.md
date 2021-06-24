@@ -55,7 +55,7 @@ python scripts/compute_metrics.py \
     --track2
 ```
 
-The ouptut is
+The output is
 
 ```
 Track 2 running matching of 25000 queries in 1000000 database (1500D descriptors), max_results=500000.

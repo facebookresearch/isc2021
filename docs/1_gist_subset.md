@@ -85,7 +85,18 @@ Recall at rank 10: 0.37808
 
 The threshold is a negated L2 distance (because scores should be higher for low L2 distance).
 
-By adding option `--write_predictions data/predictions_subset_1_gist.csv`, to the script call above, you get a valid track 1 submission:
+By adding option `--write_predictions data/predictions_subset_1_gist.csv` to the script call above, the predictions will be written out during the metrics computation:
+```bash
+python scripts/compute_metrics.py \
+    --query_descs data/subset_1_queries_gist.hdf5 \
+    --db_descs data/subset_1_references_gist.hdf5 \
+    --gt_filepath list_files/subset_1_ground_truth.csv \
+    --track2 \
+    --max_dim 1000 \
+    --write_predictions data/predictions_subset_1_gist.csv
+```
+
+You now have a valid track 1 submission, which you can call `compute_metrics.py` on like so:
 ```bash
 python scripts/compute_metrics.py \
     --preds_filepath data/predictions_subset_1_gist.csv \
