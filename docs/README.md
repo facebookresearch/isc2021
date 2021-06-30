@@ -23,7 +23,7 @@ While the data is downloading, you can install the required packages and compile
 
 First, clone this repo:
 ```bash
-git clone git@github.com:facebookresearch/isc2021.git
+git clone https://github.com/facebookresearch/isc2021.git
 ```
 
 Follow the steps below to install all the required dependencies in order to run the ISC evaluation code. Note: The code in this repo requires 3.5 <= Python <= 3.8.
