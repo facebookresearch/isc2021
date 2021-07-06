@@ -47,3 +47,7 @@ Step 3: [GIST descriptors on the full dataset](3_gist_full.md)
 Step 4: [Multigrain descriptors on the small subset](4_multigrain_subset.md)
 
 Step 5: [Multigrain descriptors on the full dataset](5_multigrain_full.md)
+
+Step 6: [HOW local features on the small subset](6_how_subset.md)
+
+Step 7: [HOW local features on the full dataset](7_how_full.md)
