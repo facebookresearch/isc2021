@@ -3,7 +3,7 @@
 
 ## HOW local features
 
-Searching with HOW local features consists of two steps - HOW extraction and ASMK search. For this run, we use the method -R50<sub>how<sub> (n = 2000) from paper [Learning and aggregating deep local descriptors for instance-level recognition](https://arxiv.org/abs/2007.13172). To make use of the method, HOW package must be cloned and its dependencies installed, as described in the [HOW github repository](https://github.com/gtolias/how). All commands expect the how repository to be inside the `baselines` folder. It is necessary to use GPU for both extraction and search due to a limited performance on a CPU. Intermediate results are provided and can be downloaded for each step. Times reported in parentheses are for GPU Tesla V100.
+Searching with HOW local features consists of two steps - HOW extraction and ASMK search. For this run, we use the method -R50<sub>how</sub> (n = 2000) from paper [Learning and aggregating deep local descriptors for instance-level recognition](https://arxiv.org/abs/2007.13172). To make use of the method, HOW package must be cloned and its dependencies installed, as described in the [HOW github repository](https://github.com/gtolias/how). All commands expect the how repository to be inside the `baselines` folder. It is necessary to use GPU for both extraction and search due to a limited performance on a CPU. Intermediate results are provided and can be downloaded for each step. Times reported in parentheses are for GPU Tesla V100.
 
 ```bash
 cd baselines
