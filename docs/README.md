@@ -23,7 +23,7 @@ While the data is downloading, you can install the required packages and compile
 
 First, clone this repo:
 ```bash
-git clone git@github.com:facebookresearch/isc2021.git
+git clone https://github.com/facebookresearch/isc2021.git
 ```
 
 Follow the steps below to install all the required dependencies in order to run the ISC evaluation code. Note: The code in this repo requires 3.5 <= Python <= 3.8.
@@ -47,3 +47,7 @@ Step 3: [GIST descriptors on the full dataset](3_gist_full.md)
 Step 4: [Multigrain descriptors on the small subset](4_multigrain_subset.md)
 
 Step 5: [Multigrain descriptors on the full dataset](5_multigrain_full.md)
+
+Step 6: [HOW local features on the small subset](6_how_subset.md)
+
+Step 7: [HOW local features on the full dataset](7_how_full.md)

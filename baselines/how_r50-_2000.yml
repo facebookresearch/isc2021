@@ -1,0 +1,26 @@
+# Demo parameters for extraction of HOW method -R50 n=2000
+
+__template__: ./how/examples/params/eccv20/eval_how_r50-_2000.yml
+
+experiment: how_r50-_2000 # Experiment folder name
+
+demo_eval:
+  data_folder: ../../data # Data path relative to the package root (can be absolute path)
+  exp_folder: ../../data # Experiment path relative to the package root (can be absolute path)
+
+evaluation:
+  local_descriptor:
+    datasets:
+      # References image list as an example of dataset definition
+      - name: references
+        image_root: "images/references/*.jpg"
+        query_list: null
+        database_list: "list_files/references"
+    asmk:
+      query_ivf:
+        search:
+          topk: 10000 # Limit the number of search results to 10k per query
+
+  multistep:
+    step: null # One of train_codebook, aggregate_database, build_ivf, or query_ivf
+    partition: null # E.g. 10_0 for the 1-st partition out of 10 (valid for steps aggregate_database and query_ivf)
