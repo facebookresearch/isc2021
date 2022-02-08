@@ -15,6 +15,8 @@ https://www.drivendata.org/competitions/80/competition-image-similarity-2-dev/da
 Please be patient, this is a total of 350 GB of data.
 Note that the training images are not required for the first steps of the process.
 
+**Update (2022-02-08):**  After the competition, the data is available at: https://sites.google.com/view/isc2021/dataset
+
 In the following, we assume that the images are available in the `images/queries`, `images/references` and `images/train` subdirectories.
 
 While the data is downloading, you can install the required packages and compile some code.
