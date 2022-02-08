@@ -7,6 +7,8 @@ This repository contains code for the Image Similarity Challenge 2021.
 The [docs](docs) subdirectory has step-by-step instructions on how to reproduce the baseline 
 results from the paper. 
 
+Update (2022-02-08): The data is publicly available at: https://sites.google.com/view/isc2021/dataset
+
 ## Reference paper
 
 The competition is described in this paper:  https://arxiv.org/abs/2106.09672
