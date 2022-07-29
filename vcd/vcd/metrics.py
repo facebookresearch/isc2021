@@ -111,28 +111,27 @@ class VideoPair:
     ignoring the gt bboxes that do not overlap with any prediction.
     """
 
+    gts: List[Match]
+    preds: List[Match]
+
     def __init__(self, ):
-        self.inter_q, self.total_q, self.inter_r, self.total_r = 0, 0, 0, 0
-        self.gts, self.preds = [], []
+        self.intersections = {axis: 0 for axis in Axis}
+        self.totals = {axis: 0 for axis in Axis}
+        self.gts = []
+        self.preds = []
 
-    def total_gt_length(self, ) -> Tuple[int, int]:
-        gt_q_ints = Intervals([gt.interval(Axis.QUERY) for gt in self.gts])
-        gt_r_ints = Intervals([gt.interval(Axis.REF) for gt in self.gts])
-        return gt_q_ints.total_length(), gt_r_ints.total_length()
+    def total_gt_length(self, axis: Axis) -> int:
+        return Intervals([gt.interval(axis) for gt in self.gts]).total_length()
 
-    def total_pred_length(self, ) -> Tuple[int, int]:
-        pred_q_ints = Intervals([pred.interval(Axis.QUERY) for pred in self.preds])
-        pred_r_ints = Intervals([pred.interval(Axis.REF) for pred in self.preds])
-        return pred_q_ints.total_length(), pred_r_ints.total_length()
+    def total_pred_length(self, axis: Axis) -> int:
+        return Intervals([pred.interval(axis) for pred in self.preds]).total_length()
 
     def gt_overlaps(self, gt: Match) -> bool:
         """Checks if the provided gt bbox overlaps with at least one pred bbox."""
-        overlaps = False
         for pred in self.preds:
             if gt.overlaps(pred):
-                overlaps = True
-                break
-        return overlaps
+                return True
+        return False
 
     def add_gt(self, bbox: Match):
         self.gts.append(bbox)
@@ -143,31 +142,26 @@ class VideoPair:
         length covered for both query and reference axes.
         """
         self.preds.append(bbox)
+        # A subset of GTs to consider for intersection (but not total GT length).
         gts_to_consider = [gt for gt in self.gts if self.gt_overlaps(gt)]
 
-        pred_q_ints = Intervals([pred.interval(Axis.QUERY) for pred in self.preds])
-        gt_q_ints = Intervals([gt.interval(Axis.QUERY) for gt in gts_to_consider])
+        intersect_deltas = {}
+        total_deltas = {}
 
-        # New intersection and total length on the query axis
-        new_inter_q = pred_q_ints.intersect_length(gt_q_ints)
-        new_total_q = pred_q_ints.total_length()
+        for axis in Axis:
+            pred_ints = Intervals([pred.interval(axis) for pred in self.preds])
+            gt_ints = Intervals([gt.interval(axis) for gt in gts_to_consider])
+            # New intersection and total length on this axis
+            intersect_length = pred_ints.intersect_length(gt_ints)
+            prediction_length = pred_ints.total_length()
+            # Compute differences
+            intersect_deltas[axis] = intersect_length - self.intersections[axis]
+            total_deltas[axis] = prediction_length - self.totals[axis]
+            # Update with new values
+            self.intersections[axis] = intersect_length
+            self.totals[axis] = prediction_length
 
-        pred_r_ints = Intervals([pred.interval(Axis.REF) for pred in self.preds])
-        gt_r_ints = Intervals([gt.interval(Axis.REF) for gt in gts_to_consider])
-
-        # New intersection and total length on the reference axis
-        new_inter_r = pred_r_ints.intersect_length(gt_r_ints)
-        new_total_r = pred_r_ints.total_length()
-
-        # Compute differences
-        diff_inter_q, diff_total_q = new_inter_q - self.inter_q, new_total_q - self.total_q
-        diff_inter_r, diff_total_r = new_inter_r - self.inter_r, new_total_r - self.total_r
-
-        # Update with new values
-        self.inter_q, self.total_q = new_inter_q, new_total_q
-        self.inter_r, self.total_r = new_inter_r, new_total_r
-
-        return diff_inter_q, diff_total_q, diff_inter_r, diff_total_r
+        return intersect_deltas, total_deltas
 
     def visualize(self, max_len=30, scale=10, boundary=3):
         """A naive visualization scheme."""
@@ -258,39 +252,34 @@ def match_metric_v2(gts: Collection[Match], predictions: Collection[Match], visu
         video_pairs[pair_id].add_gt(gt)
 
     # Get the total gt length for each axis
-    gt_q_length = 0
-    gt_r_length = 0
+    gt_total_lengths = {axis: 0 for axis in Axis}
     for k, v in video_pairs.items():
-        gt_q_len, gt_r_len = v.total_gt_length()
-        gt_q_length += gt_q_len
-        gt_r_length += gt_r_len
+        for axis in Axis:
+            gt_total_lengths[axis] += v.total_gt_length(axis)
 
     # Loop through the predictions
-    recall, metric = 0., 0.
-    inter_q, total_q, inter_r, total_r = 0, 0, 0, 0
+    recall = 0.
+    metric = 0.
+    intersections = {axis: 0 for axis in Axis}
+    totals = {axis: 0 for axis in Axis}
     for pred in predictions:
         pair_id = f"{pred.query_id}-{pred.ref_id}"
 
         # Given a new prediction, we only need the differences in the intersection with
         # gt and total video length covered for both query and reference axes.
-        diff_inter_q, diff_total_q, diff_inter_r, diff_total_r = \
-            video_pairs[pair_id].add_prediction(pred)
+        intersection_deltas, total_deltas = video_pairs[pair_id].add_prediction(pred)
 
-        # Accumulate the differences to the corresponding values
-        inter_q += diff_inter_q
-        total_q += diff_total_q
-        inter_r += diff_inter_r
-        total_r += diff_total_r
+        recalls = {}
+        precisions = {}
+        for axis in Axis:
+            # Accumulate the differences to the corresponding values
+            intersections[axis] += intersection_deltas[axis]
+            totals[axis] += total_deltas[axis]
+            recalls[axis] = intersections[axis] / gt_total_lengths[axis]
+            precisions[axis] = intersections[axis] / totals[axis]
 
-        # Compute precision and recall
-        recall_q = inter_q / gt_q_length
-        recall_r = inter_r / gt_r_length
-
-        precision_q = inter_q / total_q
-        precision_r = inter_r / total_r
-
-        new_recall = sqrt(recall_q * recall_r)
-        precision = sqrt(precision_q * precision_r)
+        new_recall = sqrt(recalls[Axis.QUERY] * recalls[Axis.REF])
+        precision = sqrt(precisions[Axis.QUERY] * precisions[Axis.REF])
 
         # Compute metric
         delta_recall = new_recall - recall
