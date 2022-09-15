@@ -1,9 +1,68 @@
+import collections
+import dataclasses
 import enum
-from math import sqrt
-from typing import NamedTuple, Collection, List, Optional, Sequence, Tuple
 from collections import defaultdict
+from math import sqrt
+from typing import (
+    Collection,
+    List,
+    NamedTuple,
+    Optional,
+    Sequence,
+    TextIO,
+    Tuple,
+    Union,
+)
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+
+
+@dataclasses.dataclass
+class CandidatePair:
+    query_id: int
+    ref_id: int
+    score: float
+
+    @classmethod
+    def write_csv(
+        cls, candidates: Collection["CandidatePair"], file: Union[str, TextIO]
+    ):
+        df = pd.DataFrame(
+            [dataclasses.asdict(c) for c in candidates],
+            columns=[field.name for field in dataclasses.fields(cls)],
+        )
+        df.to_csv(file, index=False)
+
+    @classmethod
+    def read_csv(cls, file: Union[str, TextIO]) -> List["CandidatePair"]:
+        df = pd.read_csv(file)
+        return [CandidatePair(**record) for record in df.to_dict("records")]
+
+    @classmethod
+    def from_matches(cls, matches: Collection["Match"]) -> List["CandidatePair"]:
+        scores = collections.defaultdict(float)
+        for match in matches:
+            key = (match.query_id, match.ref_id)
+            scores[key] = max(match.score, scores[key])
+        return [
+            CandidatePair(query_id=query_id, ref_id=ref_id, score=score)
+            for ((query_id, ref_id), score) in scores.items()
+        ]
+
+
+@dataclasses.dataclass
+class PrecisionRecallCurve:
+    precisions: np.ndarray
+    recalls: np.ndarray
+    scores: np.ndarray
+
+
+@dataclasses.dataclass
+class AveragePrecision:
+    ap: float
+    pr_curve: PrecisionRecallCurve
 
 
 class Intervals:
@@ -24,7 +83,7 @@ class Intervals:
         return Intervals(self.intervals + intervals.intervals)
 
     def total_length(self):
-        length = 0.
+        length = 0.0
         for start, end in self.intervals:
             length += end - start
         return length
@@ -69,19 +128,18 @@ class Axis(enum.Enum):
 
 
 class Match(NamedTuple):
-    """A ground-truth match or predicted match.
+    """A ground-truth match or predicted match."""
 
-    Omits query_id and ref_id, focusing on the single pair case for visualization.
-    Doesn't lose generality. A full dataset could have all queries and refs
-    concatenated and metrics would be equivalent.
-    """
     query_start: float
     query_end: float
     ref_start: float
     ref_end: float
     score: float = 1.0
-    query_id: str = ""
-    ref_id: str = ""
+    query_id: Optional[int] = None
+    ref_id: Optional[int] = None
+
+    def pair_id(self):
+        return (self.query_id, self.ref_id)
 
     def interval(self, axis: Axis) -> Tuple[float, float]:
         if axis == Axis.QUERY:
@@ -97,10 +155,30 @@ class Match(NamedTuple):
         inter_r_end = min(self.ref_end, bbox.ref_end)
 
         # Compute the area of intersection rectangle
-        return abs(max((inter_q_end - inter_q_start, 0)) * max((inter_r_end - inter_r_start), 0))
+        return abs(
+            max((inter_q_end - inter_q_start, 0))
+            * max((inter_r_end - inter_r_start), 0)
+        )
 
     def overlaps(self, bbox: "Match") -> bool:
-        return self.intersection_area(bbox) > 0.
+        return self.intersection_area(bbox) > 0.0
+
+    @classmethod
+    def write_csv(cls, matches: Collection["Match"], file: Union[str, TextIO]):
+        df = pd.DataFrame([match._asdict() for match in matches], columns=cls._fields)
+        df.to_csv(file, index=False)
+
+    @classmethod
+    def read_csv(
+        cls, file: Union[str, TextIO], is_gt=False, check=True
+    ) -> List["Match"]:
+        df = pd.read_csv(file)
+        if is_gt:
+            df["score"] = 1.0
+        if check:
+            for field in cls._fields:
+                assert not df[field].isna().any()
+        return [Match(**record) for record in df.to_dict("records")]
 
 
 class VideoPair:
@@ -114,7 +192,9 @@ class VideoPair:
     gts: List[Match]
     preds: List[Match]
 
-    def __init__(self, ):
+    def __init__(
+        self,
+    ):
         self.intersections = {axis: 0 for axis in Axis}
         self.totals = {axis: 0 for axis in Axis}
         self.gts = []
@@ -165,7 +245,9 @@ class VideoPair:
 
     def visualize(self, max_len=30, scale=10, boundary=3):
         """A naive visualization scheme."""
-        mask = np.ones((max_len * scale + boundary + 1, max_len * scale + boundary + 1, 3))
+        mask = np.ones(
+            (max_len * scale + boundary + 1, max_len * scale + boundary + 1, 3)
+        )
         for gt in self.gts:
             qs, qe = gt.query_start * scale, gt.query_end * scale
             rs, re = gt.ref_start * scale, gt.ref_end * scale
@@ -173,20 +255,20 @@ class VideoPair:
             slop = float(qe - qs) / float(re - rs + 1e-7)
             for y in np.arange(qs, qe + boundary, 0.1):
                 x = round((y - qs) / slop + rs)
-                mask[int(y), int(x), :] = 0.
+                mask[int(y), int(x), :] = 0.0
 
-            mask[qs: qe + boundary + 1, rs] = [1., 0., 0.]
-            mask[qs, rs: re + boundary + 1] = [1., 0., 0.]
-            mask[qs: qe + boundary + 1, re + boundary] = [1., 0., 0.]
-            mask[qe + boundary, rs: re + boundary + 1] = [1., 0., 0.]
+            mask[qs : qe + boundary + 1, rs] = [1.0, 0.0, 0.0]
+            mask[qs, rs : re + boundary + 1] = [1.0, 0.0, 0.0]
+            mask[qs : qe + boundary + 1, re + boundary] = [1.0, 0.0, 0.0]
+            mask[qe + boundary, rs : re + boundary + 1] = [1.0, 0.0, 0.0]
         for pr in self.preds:
             qs, qe = pr.query_start * scale, pr.query_end * scale
             rs, re = pr.ref_start * scale, pr.ref_end * scale
 
-            mask[qs: qe + boundary + 1, rs] = [0., 0., 1.]
-            mask[qs, rs: re + boundary + 1] = [0., 0., 1.]
-            mask[qs: qe + boundary + 1, re + boundary] = [0., 0., 1.]
-            mask[qe + boundary, rs: re + boundary + 1] = [0., 0., 1.]
+            mask[qs : qe + boundary + 1, rs] = [0.0, 0.0, 1.0]
+            mask[qs, rs : re + boundary + 1] = [0.0, 0.0, 1.0]
+            mask[qs : qe + boundary + 1, re + boundary] = [0.0, 0.0, 1.0]
+            mask[qe + boundary, rs : re + boundary + 1] = [0.0, 0.0, 1.0]
 
         plt.imshow(mask)
         plt.show()
@@ -203,8 +285,8 @@ def match_metric_single_axis(gt: Intervals, preds: Sequence[Tuple[float, float]]
     """
     pred_ints = Intervals()
     gt_length = gt.total_length()
-    recall = 0.
-    metric = 0.
+    recall = 0.0
+    metric = 0.0
     for interval in preds:
         pred_ints.add(interval)
         intersect_length = pred_ints.intersect_length(gt)
@@ -231,7 +313,9 @@ def match_metric_v1(gt: Collection[Match], predictions: Collection[Match]):
     return metrics + [sqrt(metric)]
 
 
-def match_metric_v2(gts: Collection[Match], predictions: Collection[Match], visualize: bool = False):
+def match_metric_v2(
+    gts: Collection[Match], predictions: Collection[Match], visualize: bool = False
+) -> AveragePrecision:
     """V2 metric:
 
     Computes the AP based on the VCSL approach for the
@@ -241,30 +325,31 @@ def match_metric_v2(gts: Collection[Match], predictions: Collection[Match], visu
 
     where, P(i) = sqrt(P_q * P_r) and R(i) = sqrt(R_q * R_r)
     calculated as in the VCSL.
-    """
+    """  # noqa: W605
 
     predictions = sorted(predictions, key=lambda x: x.score, reverse=True)
 
     # Initialize video pairs and load their gt bboxs
     video_pairs = defaultdict(VideoPair)
     for gt in gts:
-        pair_id = f"{gt.query_id}-{gt.ref_id}"
-        video_pairs[pair_id].add_gt(gt)
+        video_pairs[gt.pair_id()].add_gt(gt)
 
     # Get the total gt length for each axis
     gt_total_lengths = {axis: 0 for axis in Axis}
-    for k, v in video_pairs.items():
+    for _, v in video_pairs.items():
         for axis in Axis:
             gt_total_lengths[axis] += v.total_gt_length(axis)
 
     # Loop through the predictions
-    recall = 0.
-    metric = 0.
+    recall = 0.0
+    metric = 0.0
     intersections = {axis: 0 for axis in Axis}
     totals = {axis: 0 for axis in Axis}
+    pr_recalls = []
+    pr_precisions = []
+    pr_scores = []
     for pred in predictions:
-        pair_id = f"{pred.query_id}-{pred.ref_id}"
-
+        pair_id = pred.pair_id()
         # Given a new prediction, we only need the differences in the intersection with
         # gt and total video length covered for both query and reference axes.
         intersection_deltas, total_deltas = video_pairs[pair_id].add_prediction(pred)
@@ -285,8 +370,80 @@ def match_metric_v2(gts: Collection[Match], predictions: Collection[Match], visu
         delta_recall = new_recall - recall
         metric += precision * delta_recall
         recall = new_recall
+        if delta_recall > 0:
+            pr_recalls.append(recall)
+            pr_precisions.append(precision)
+            pr_scores.append(pred.score)
 
     if visualize:
-        for k, v in video_pairs.items():
+        for _, v in video_pairs.items():
             v.visualize()
-    return metric
+    curve = PrecisionRecallCurve(
+        np.array(pr_precisions), np.array(pr_recalls), np.array(pr_scores)
+    )
+    return AveragePrecision(metric, curve)
+
+
+@dataclasses.dataclass
+class MatchingTrackMetrics:
+    # Our main evaluation metric.
+    segment_ap_v2: AveragePrecision
+    # This metric reflects only pairwise matching, and not localization.
+    pairwise_micro_ap: AveragePrecision
+
+
+def evaluate_matching_track(
+    ground_truth_filename: str, predictions_filename: str
+) -> MatchingTrackMetrics:
+    """Matching track evaluation.
+
+    Predictions are expected to be a CSV file, with a column names in the header.
+    The following columns must be present, in any order:
+        query_id: str, the ID of the query for this match
+        ref_id: str, the ID of the reference for this match
+        query_start: float, the start of the query segment in seconds
+        query_end: float, the end of the query segment in seconds
+        ref_start: float, the start of the reference segment in seconds
+        ref_end: float, the end of the reference segment in seconds
+        score: float, the score of this prediction (a higher score indicates a
+            more confident prediction)
+
+    Note that ground-truth matches are specified using the same format, but score
+    is not used.
+    """
+    gt = Match.read_csv(ground_truth_filename, is_gt=True)
+    predictions = Match.read_csv(predictions_filename)
+    metric = match_metric_v2(gt, predictions)
+    # Auxiliary metric: pairwise uAP
+    gt_pairs = CandidatePair.from_matches(gt)
+    pairs = CandidatePair.from_matches(predictions)
+    pair_ap = average_precision(gt_pairs, pairs)
+    return MatchingTrackMetrics(segment_ap_v2=metric, pairwise_micro_ap=pair_ap)
+
+
+def average_precision(
+    ground_truth: Collection[CandidatePair], predictions: Collection[CandidatePair]
+) -> AveragePrecision:
+    gt_pairs = {(pair.query_id, pair.ref_id) for pair in ground_truth}
+    if len(gt_pairs) != len(ground_truth):
+        raise AssertionError("Duplicates detected in ground truth")
+    predicted_pairs = {(pair.query_id, pair.ref_id) for pair in predictions}
+    if len(predicted_pairs) != len(predictions):
+        raise AssertionError("Duplicates detected in predictions")
+
+    predictions = sorted(predictions, key=lambda x: x.score, reverse=True)
+    scores = np.array([pair.score for pair in predictions])
+    correct = np.array(
+        [(pair.query_id, pair.ref_id) in gt_pairs for pair in predictions]
+    )
+    total_pairs = len(gt_pairs)
+    # precision = correct_so_far / total_pairs_so_far
+    cumulative_correct = np.cumsum(correct)
+    cumulative_predicted = np.arange(len(correct)) + 1
+    recall = cumulative_correct / total_pairs
+    precision = cumulative_correct / cumulative_predicted
+    ap = np.sum(precision * correct) / total_pairs
+    # Get precision and recall where correct is true
+    indices = np.nonzero(correct)[0]
+    curve = PrecisionRecallCurve(precision[indices], recall[indices], scores[indices])
+    return AveragePrecision(ap, curve)
