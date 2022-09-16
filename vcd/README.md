@@ -7,6 +7,22 @@ conda create --name vcd -c pytorch -c conda-forge pytorch torchvision \
 
 We don't need pytorch for the codebase currently; this is just the environment I used.
 
+Initializing git submodules is not required for this type of installation.
+
+# Installation with VCSL
+
+The [VCSL](https://github.com/alipay/VCSL) codebase is used to localize matches for our baseline matching methods.
+
+```
+conda create --name vcd-vcsl -c pytorch -c conda-forge pytorch torchvision \
+  scikit-learn numpy pandas matplotlib faiss networkx loguru numba cython \
+  h5py
+conda activate vcd-vcsl
+pip install tslearn
+```
+
+h5py is not needed, but installing it stops some log spam.
+
 # Running tests
 
 ```
@@ -18,6 +34,10 @@ Ran 21 tests in 0.060s
 
 OK (skipped=2)
 ```
+
+The skipped tests are localization tests that only run if VCSL is installed.
+
+When run, localization tests warn about unclosed multiprocessing pools.
 
 # Descriptor eval
 

@@ -9,7 +9,7 @@ from vcd.baseline.localization import VCSLLocalizationMaxSim
 from vcd.index import VideoFeature
 
 try:
-    import vcsl  # @manual  # noqa: F401
+    from vcsl.vta import build_vta_model  # @manual  # noqa: F401
 
     HAS_VCSL = True
 except ImportError:
